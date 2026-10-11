@@ -28,3 +28,9 @@ class Content(models.Model):
     last_changed_at = models.DateTimeField(default=timezone.now)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ["-last_changed_at", "-id"]
+
+    def __str__(self):
+        return f"{self.title} - version {self.version}"
