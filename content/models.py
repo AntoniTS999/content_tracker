@@ -34,3 +34,27 @@ class Content(models.Model):
 
     def __str__(self):
         return f"{self.title} - version {self.version}"
+
+
+class ContentRevision(models.Model):
+    """Unchangeable copy (version history)"""
+
+    content = models.ForeignKey(
+        Content, on_delete=models.CASCADE, related_name="revisions"
+    )
+    version = models.PositiveIntegerField()
+    editor = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        null=True,
+        blank=True,
+        on_delete=models.SET_NULL,
+        related_name="+",
+    )
+    created_at = models.DateTimeField(default=timezone.now)
+
+    content_type = models.CharField(max_length=20, choices=Content.Type.choices)
+    title = models.CharField(max_length=255)
+    body = models.TextField(blank=True)
+    content_hash = models.CharField(max_length=64)
+
+    changed_fields = models.JSONField(default=list)
