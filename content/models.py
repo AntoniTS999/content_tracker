@@ -58,3 +58,14 @@ class ContentRevision(models.Model):
     content_hash = models.CharField(max_length=64)
 
     changed_fields = models.JSONField(default=list)
+
+    class Meta:
+        ordering = ["version"]
+        constraints = [
+            models.UniqueConstraint(
+                fields=["content", "version"], name="unique_revision_content_version"
+            ),
+        ]
+
+    def __str__(self):
+        return f"{self.content.id} - version: {self.version}"
