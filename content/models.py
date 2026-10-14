@@ -68,4 +68,33 @@ class ContentRevision(models.Model):
         ]
 
     def __str__(self):
-        return f"{self.content.id} - version: {self.version}"
+        return f"{self.content_id} - version: {self.version}"
+
+
+class UserContentState(models.Model):
+
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name="content_states",
+    )
+    content = models.ForeignKey(
+        Content, on_delete=models.CASCADE, related_name="user_states"
+    )
+
+    last_seen_version = models.PositiveIntegerField()
+    last_seen_at = models.DateTimeField(default=timezone.now)
+    is_watching = models.BooleanField(default=False)
+
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(
+                fields=["user", "content"], name="unique_state_user_content"
+            ),
+        ]
+        indexes = [
+            models.Index(fields=["user", "is_watching"]),
+        ]
+
+    def __str__(self):
+        return f"user {self.user_id} - content {self.content_id} - seen version: {self.last_seen_version}"
