@@ -4,7 +4,7 @@ import json
 from django.db import transaction
 from django.utils import timezone
 
-from .models import Content, ContentRevision
+from content.models import Content, ContentRevision, UserContentState
 
 TRACKED_FIELDS = ["title", "body", "content_type"]
 
@@ -73,3 +73,36 @@ def update_content(content, editor, data):
         **new_values,
     )
     return True
+
+
+def start_watching(user, content):
+
+    state, created = UserContentState.objects.get_or_create(
+        user=user,
+        content=content,
+        defaults={"last_seen_version": content.version, "is_watching": True},
+    )
+    if not created and not state.is_watching:
+        state.is_watching = True
+        state.save()
+        return True
+    return created
+
+
+def stop_watching(user, content):
+    UserContentState.objects.filter(user=user, content=content).update(
+        is_watching=False
+    )
+
+
+def mark_seen(user, content):
+
+    state, created = UserContentState.objects.get_or_create(
+        user=user,
+        content=content,
+        defaults={"last_seen_version": content.version},
+    )
+    if not created and state.last_seen_version < content.version:
+        state.last_seen_version = content.version
+        state.last_seen_at = timezone.now()
+        state.save()
