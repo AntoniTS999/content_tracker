@@ -37,6 +37,7 @@ class ContentViewSet(
         services.stop_watching(request.user, content)
         return Response(status=204)
 
+
 class MyChangesView(generics.ListAPIView):
     serializer_class = ChangedContentSerializer
 
