@@ -1,6 +1,11 @@
 from rest_framework.routers import DefaultRouter
 from django.urls import path, include
-from content.views import ContentViewSet, MyChangesView
+from content.views import (
+    ContentViewSet,
+    MyChangesView,
+    UserContentState,
+    UserChangesView,
+)
 
 router = DefaultRouter()
 
@@ -11,4 +16,9 @@ app_name = "content"
 urlpatterns = [
     path("", include(router.urls)),
     path("me/changes/", MyChangesView.as_view(), name="my-changes"),
+    path(
+        "admin/users/<int:user_id>/changes/",
+        UserChangesView.as_view(),
+        name="user-changes",
+    ),
 ]

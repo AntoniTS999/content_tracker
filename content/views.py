@@ -1,5 +1,6 @@
+from django.shortcuts import get_object_or_404
 from rest_framework import generics, viewsets, mixins
-from rest_framework.permissions import IsAuthenticated
+from rest_framework.permissions import IsAuthenticated, IsAdminUser
 from rest_framework.decorators import action
 from django.db.models import F
 from rest_framework.response import Response
@@ -7,6 +8,7 @@ from content.models import Content, UserContentState
 from content import services
 from content.permissions import IsAuthorOrStaffOrReadOnly
 from content.serializers import ChangedContentSerializer, ContentSerializer
+from users.models import User
 
 
 class ContentViewSet(
@@ -56,13 +58,23 @@ class ContentViewSet(
 class MyChangesView(generics.ListAPIView):
     serializer_class = ChangedContentSerializer
 
+    def get_target_user(self):
+        return self.request.user
+
     def get_queryset(self):
         return (
             UserContentState.objects.filter(
-                user=self.request.user,
+                user=self.get_target_user(),
                 is_watching=True,
                 content__version__gt=F("last_seen_version"),
             )
             .select_related("content")
             .order_by("-content__last_changed_at")
         )
+
+
+class UserChangesView(MyChangesView):
+    permission_classes = [IsAdminUser]
+
+    def get_target_user(self):
+        return get_object_or_404(User, pk=self.kwargs["user_id"])
