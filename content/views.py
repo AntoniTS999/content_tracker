@@ -20,10 +20,25 @@ class ContentViewSet(
     serializer_class = ContentSerializer
     permission_classes = [IsAuthenticated, IsAuthorOrStaffOrReadOnly]
 
+    def get_states(self, contents):
+        states = UserContentState.objects.filter(
+            user=self.request.user, content__in=contents
+        )
+        return {state.content_id: state for state in states}
+
+    def list(self, request, *args, **kwargs):
+        page = self.paginate_queryset(self.filter_queryset(self.get_queryset()))
+        context = self.get_serializer_context()
+        context["states"] = self.get_states(page)
+        serializer = self.get_serializer(page, many=True, context=context)
+        return self.get_paginated_response(serializer.data)
+
     def retrieve(self, request, *args, **kwargs):
         content = self.get_object()
-        data = self.get_serializer(content).data
-        services.mark_seen(request.user, content)  # otwarcie szczegółów = przeczytane
+        context = self.get_serializer_context()
+        context["states"] = self.get_states([content])
+        data = self.get_serializer(content, context=context).data
+        services.mark_seen(request.user, content)
         return Response(data)
 
     @action(
