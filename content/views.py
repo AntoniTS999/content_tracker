@@ -16,7 +16,6 @@ class ContentViewSet(
     mixins.UpdateModelMixin,
     viewsets.GenericViewSet,
 ):
-
     queryset = Content.objects.select_related("author")
     serializer_class = ContentSerializer
     permission_classes = [IsAuthenticated, IsAuthorOrStaffOrReadOnly]
