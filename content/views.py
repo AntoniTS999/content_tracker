@@ -7,7 +7,11 @@ from rest_framework.response import Response
 from content.models import Content, UserContentState
 from content import services
 from content.permissions import IsAuthorOrStaffOrReadOnly
-from content.serializers import ChangedContentSerializer, ContentSerializer
+from content.serializers import (
+    ChangedContentSerializer,
+    ContentSerializer,
+    ContentRevisionSerializer,
+)
 from users.models import User
 
 
@@ -53,6 +57,20 @@ class ContentViewSet(
             return Response({"watching": True}, status=201 if started else 200)
         services.stop_watching(request.user, content)
         return Response(status=204)
+
+    @action(detail=True, methods=["get"])
+    def history(self, request, pk=None):
+        content = self.get_object()
+        state = UserContentState.objects.filter(
+            user=request.user, content=content
+        ).first()
+        context = self.get_serializer_context()
+        context["seen_version"] = state.last_seen_version if state else None
+
+        revisions = content.revisions.select_related("editor").order_by("-version")
+        page = self.paginate_queryset(revisions)
+        serializer = ContentRevisionSerializer(page, many=True, context=context)
+        return self.get_paginated_response(serializer.data)
 
 
 class MyChangesView(generics.ListAPIView):
