@@ -1,7 +1,7 @@
 from rest_framework import serializers
 
 from content import services
-from content.models import Content, UserContentState
+from content.models import Content, UserContentState, ContentRevision
 from users.serializers import UserSerializer
 
 
@@ -85,3 +85,16 @@ class ChangedContentSerializer(serializers.ModelSerializer):
 
     def get_versions_behind(self, obj):
         return obj.content.version - obj.last_seen_version
+
+
+class ContentRevisionSerializer(serializers.ModelSerializer):
+    editor = UserSerializer(read_only=True)
+    is_new = serializers.SerializerMethodField()
+
+    class Meta:
+        model = ContentRevision
+        fields = ["version", "editor", "changed_fields", "created_at", "is_new"]
+
+    def get_is_new(self, obj):
+        seen = self.context.get("seen_version")
+        return seen is None or obj.version > seen
