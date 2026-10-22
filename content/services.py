@@ -88,9 +88,9 @@ def start_watching(user, content):
     )
     if created:
         return True
-    updated = UserContentState.objects.filter(
-        pk=state.pk, is_watching=False
-    ).update(is_watching=True)
+    updated = UserContentState.objects.filter(pk=state.pk, is_watching=False).update(
+        is_watching=True
+    )
     return updated > 0
 
 

@@ -54,10 +54,21 @@ To check what changed for a user X:
 
 ## How it works
 
-**What is a change?** If the title, body or type changes, the content gets a new version
-(`Content.version` goes up by 1) and a copy is saved in `ContentRevision` together with the
-list of changed fields. I compare a hash of the (cleaned) fields, so saving the same text again
-(or only adding spaces) does not create a new version and nobody gets a fake notification.
+**What is a change?** A change is when the title, the body or the type of the content is different than before.
+Then the content gets a new version (`Content.version` goes up by 1) and a copy is saved in
+`ContentRevision`, together with the list of changed fields.
+
+Before comparing, we clean the text removing spaces and new lines from the start and the
+end of `title` and `body`, and change `\r\n` to `\n` in `body`. Spaces and empty lines in the
+middle of the text are not removed, so they count as a change. Then we make a hash of the cleaned
+fields and compare it with the saved hash.
+
+If the hash is the same, the edit is rejected. Nothing is saved, there is no new version and no
+notification. So if someone only adds a space or an enter at the end of the text, it is not saved
+at all. It was done that way to keep the history clean and to avoid fake notifications.
+
+The downside is that some formats need those spaces. For example, in Markdown two spaces at the
+end of a line make a line break. For such formats the cleaning should be smaller.
 
 **Per-user state.** `UserContentState` keeps `last_seen_version` and `is_watching` for each
 (user, content) pair. Content is "changed" for a user when `content.version > last_seen_version`.
