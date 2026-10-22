@@ -86,11 +86,12 @@ def start_watching(user, content):
         content=content,
         defaults={"last_seen_version": content.version, "is_watching": True},
     )
-    if not created and not state.is_watching:
-        state.is_watching = True
-        state.save()
+    if created:
         return True
-    return created
+    updated = UserContentState.objects.filter(
+        pk=state.pk, is_watching=False
+    ).update(is_watching=True)
+    return updated > 0
 
 
 def stop_watching(user, content):
