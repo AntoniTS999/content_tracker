@@ -3,7 +3,6 @@ from django.urls import path, include
 from content.views import (
     ContentViewSet,
     MyChangesView,
-    UserContentState,
     UserChangesView,
 )
 

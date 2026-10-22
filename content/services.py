@@ -106,7 +106,11 @@ def mark_seen(user, content):
         content=content,
         defaults={"last_seen_version": content.version},
     )
-    if not created and state.last_seen_version < content.version:
-        state.last_seen_version = content.version
-        state.last_seen_at = timezone.now()
-        state.save()
+    if not created:
+        UserContentState.objects.filter(
+            pk=state.pk,
+            last_seen_version__lt=content.version,
+        ).update(
+            last_seen_version=content.version,
+            last_seen_at=timezone.now(),
+        )
