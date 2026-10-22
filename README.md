@@ -106,6 +106,8 @@ version is saved in `ContentRevision`, so diffs can be added later.
 Two edits of the same content at the same moment could get the same version number.
 `UNIQUE(content, version)` stops this: the second one fails instead of making a duplicate.
 For production I would add `select_for_update()` in `update_content` so the edits go one by one.
+`last_seen_version` is updated with a conditional UPDATE (WHERE last_seen_version < new), so a slow older request can never move it back.
+
 
 ## Simplifications
 
