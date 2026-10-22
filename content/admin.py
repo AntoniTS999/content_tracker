@@ -14,7 +14,7 @@ class ContentAdmin(admin.ModelAdmin):
         "last_changed_at",
         "author",
     )
-    readonly_fields = ("version", "content_hash", "last_changed_at")
+    readonly_fields = ("author", "version", "content_hash", "last_changed_at")
 
     def save_model(self, request, obj, form, change):
         if change:
