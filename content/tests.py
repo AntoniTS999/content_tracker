@@ -3,7 +3,7 @@ from django.test.utils import CaptureQueriesContext
 from rest_framework.test import APITestCase
 
 from content import services
-from content.models import UserContentState
+from content.models import UserContentState, ContentRevision
 from users.models import User
 
 
@@ -91,3 +91,11 @@ class ContentTests(APITestCase):
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.json()["status"], "up_to_date")
         self.assertEqual(response.json()["versions_behind"], 0)
+
+    def test_changed_fields_uses_same_normalization_as_hash(self):
+        content = services.create_content(self.author, "T", "line1\r\nline2")
+        services.update_content(
+            content, self.author, {"title": "New", "body": "line1\nline2"}
+        )
+        revision = ContentRevision.objects.get(content=content, version=2)
+        self.assertEqual(revision.changed_fields, ["title"])
