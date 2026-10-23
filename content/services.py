@@ -37,6 +37,7 @@ def create_content(author, title, body="", content_type="article"):
         content_hash=content.content_hash,
         changed_fields=TRACKED_FIELDS,
     )
+    mark_seen(author, content)
     return content
 
 
@@ -74,9 +75,7 @@ def update_content(content, editor, data):
         changed_fields=changed_fields,
         **new_values,
     )
-    UserContentState.objects.filter(
-        user=editor, content=content, last_seen_version__lt=content.version
-    ).update(last_seen_version=content.version, last_seen_at=timezone.now())
+    mark_seen(editor, content)
 
     return True
 
