@@ -38,6 +38,14 @@ class ContentAdmin(admin.ModelAdmin):
 class ContentRevisionAdmin(admin.ModelAdmin):
     list_display = ("content", "version", "editor", "changed_fields", "created_at")
 
+    def has_add_permission(self, request):
+        return False
+
+    def has_change_permission(self, request, obj=None):
+        return False
+
+    def has_delete_permission(self, request, obj=None):
+        return False
 
 @admin.register(UserContentState)
 class UserContentStateAdmin(admin.ModelAdmin):
