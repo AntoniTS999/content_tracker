@@ -42,6 +42,8 @@ def create_content(author, title, body="", content_type="article"):
 
 @transaction.atomic
 def update_content(content, editor, data):
+    Content.objects.select_for_update().get(pk=content.pk)
+    content.refresh_from_db()
 
     new_values = {
         field: data.get(field, getattr(content, field)) for field in TRACKED_FIELDS
