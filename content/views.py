@@ -48,6 +48,12 @@ class ContentViewSet(
         return self.get_paginated_response(serializer.data)
 
     def retrieve(self, request, *args, **kwargs):
+        """Open content and mark it as read.
+
+        `status`, `versions_behind` and `is_watching` describe the state BEFORE this
+        request (what was new when the user opened the content). After the request
+        the content is marked as read, so the next response shows `up_to_date`.
+        """
         content = self.get_object()
         context = self.get_serializer_context()
         context["states"] = self.get_states([content])
