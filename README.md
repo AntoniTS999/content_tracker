@@ -45,7 +45,7 @@ To check what changed for a user X:
 | POST | `/api/token-verify` | check if a token is valid |
 | GET | `/api/contents/` | list of content, with `is_watching`, `status` (`unseen` / `updated` / `up_to_date`) and `versions_behind` for the current user |
 | POST | `/api/contents/` | create content |
-| GET | `/api/contents/{id}/` | detail, **marks the content as read** |
+| GET | `/api/contents/{id}/` | detail, **marks the content as read**. The user fields show the state before this open (what was new), the next call shows `up_to_date` |
 | PUT/PATCH | `/api/contents/{id}/` | edit (only author or staff) |
 | POST / DELETE | `/api/contents/{id}/watch/` | start / stop watching |
 | GET | `/api/contents/{id}/history/` | list of versions: who changed, when, which fields, `is_new` for the user |
@@ -85,8 +85,12 @@ Details:
   version 5, then you start watching: you see 4 missed versions
 - if you create or edit content, it counts as read for you (your state is created if it does not
   exist), but watching does not start by itself
-- `last_seen_version` is changed with a conditional UPDATE (`WHERE last_seen_version < new`),
-  so a slow older request can never move it back
+- `last_seen_version` is changed with a conditional UPDATE (`WHERE last_seen_version < new`), so a slow older request can never move it back
+
+- **What the detail response shows.** The detail endpoint builds the response first and marks the
+content as read after that. So `status` and `versions_behind` in this response describe what was
+new when the user opened the content (for example `updated`, 3 versions behind). The next response
+shows `up_to_date`. This way the client can show "what was new" at the moment of opening.
 
 **Why a version number and not `updated_at`?** A number is simple to compare, it does not depend
 on clocks, and it also tells how many versions the user missed.
