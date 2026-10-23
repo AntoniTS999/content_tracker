@@ -72,8 +72,10 @@ end of a line make a line break. For such formats the cleaning should be smaller
 
 **Per-user state.** `UserContentState` keeps `last_seen_version` and `is_watching` for each
 (user, content) pair. Content is "changed" for a user when `content.version > last_seen_version`.
-Opening the detail endpoint sets `last_seen_version` to the current version.
+`last_seen_version` is set to the current version when the user opens the detail endpoint, and
+also when the user creates or edits the content (you have seen the version you saved).
 The list, history and changes endpoints do not mark anything as read.
+
 
 Details:
 - if you never opened the content, when you start watching the current version is your starting
@@ -81,7 +83,10 @@ Details:
 - if you opened it before (or watched it before), your last seen version stays, so you see
   everything that changed since you last read it. For example: you read version 1, it gets to
   version 5, then you start watching: you see 4 missed versions
-- if you edit content yourself, it is not shown as a change for you
+- if you create or edit content, it counts as read for you (your state is created if it does not
+  exist), but watching does not start by itself
+- `last_seen_version` is changed with a conditional UPDATE (`WHERE last_seen_version < new`),
+  so a slow older request can never move it back
 
 **Why a version number and not `updated_at`?** A number is simple to compare, it does not depend
 on clocks, and it also tells how many versions the user missed.
