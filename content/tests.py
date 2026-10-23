@@ -67,3 +67,12 @@ class ContentTests(APITestCase):
         state = UserContentState.objects.get(user=self.user, content=self.content)
         self.assertEqual(state.last_seen_version, 1)
         self.assertTrue(state.is_watching)
+
+    def test_author_and_editor_have_seen_their_own_version(self):
+        state = UserContentState.objects.get(user=self.author, content=self.content)
+        self.assertEqual(state.last_seen_version, 1)
+
+        services.update_content(self.content, self.user, {"body": "by user"})
+        state = UserContentState.objects.get(user=self.user, content=self.content)
+        self.assertEqual(state.last_seen_version, 2)
+        self.assertFalse(state.is_watching)
