@@ -114,10 +114,13 @@ version is saved in `ContentRevision`, so diffs can be added later.
 
 ## Concurrency
 
-Two edits of the same content at the same moment could get the same version number.
-`UNIQUE(content, version)` stops this: the second one fails instead of making a duplicate.
-For production I would add `select_for_update()` in `update_content` so the edits go one by one.
-`last_seen_version` is updated with a conditional UPDATE (WHERE last_seen_version < new), so a slow older request can never move it back.
+`update_content` runs in a transaction and first locks the content row (`select_for_update()`),
+then reads the fresh data. So two edits of the same content go one after another: the second one
+waits and gets the next version number, and nobody gets a server error. `UNIQUE(content, version)`
+stays as a second safety wall.
+
+If two people change the same field, the later save overwrites
+the earlier one (the earlier version is still in the history). it works fully on PostgreSQL, so in case production - could be change easily to Postgres.
 
 
 ## Simplifications
