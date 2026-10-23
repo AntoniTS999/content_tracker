@@ -32,6 +32,14 @@ class ContentViewSet(
         )
         return {state.content_id: state for state in states}
 
+    def perform_create(self, serializer):
+        content = serializer.save()
+        serializer.context["states"] = self.get_states([content])
+
+    def perform_update(self, serializer):
+        content = serializer.save()
+        serializer.context["states"] = self.get_states([content])
+
     def list(self, request, *args, **kwargs):
         page = self.paginate_queryset(self.filter_queryset(self.get_queryset()))
         context = self.get_serializer_context()
