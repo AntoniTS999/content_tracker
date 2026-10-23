@@ -9,10 +9,18 @@ from content.models import Content, ContentRevision, UserContentState
 TRACKED_FIELDS = ["title", "body", "content_type"]
 
 
-def make_hash(title, body, content_type):
+def normalize(title, body, content_type):
+    return {
+        "title": title.strip(),
+        "body": body.replace("\r\n", "\n").strip(),
+        "content_type": content_type,
+    }
 
+
+def make_hash(title, body, content_type):
+    clean = normalize(title, body, content_type)
     text = json.dumps(
-        [title.strip(), body.replace("\r\n", "\n").strip(), content_type],
+        [clean["title"], clean["body"], clean["content_type"]],
         ensure_ascii=False,
     )
     return hashlib.sha256(text.encode("utf-8")).hexdigest()
@@ -54,10 +62,10 @@ def update_content(content, editor, data):
     if new_hash == content.content_hash:
         return False
 
+    old_clean = normalize(content.title, content.body, content.content_type)
+    new_clean = normalize(**new_values)
     changed_fields = [
-        field
-        for field in TRACKED_FIELDS
-        if new_values[field] != getattr(content, field)
+        field for field in TRACKED_FIELDS if new_clean[field] != old_clean[field]
     ]
 
     for field, value in new_values.items():
