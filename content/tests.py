@@ -3,6 +3,7 @@ from django.test.utils import CaptureQueriesContext
 from rest_framework.test import APITestCase
 
 from content import services
+from content.models import UserContentState
 from users.models import User
 
 
@@ -55,3 +56,14 @@ class ContentTests(APITestCase):
             content = services.create_content(self.author, f"t{i}", "b")
             services.start_watching(self.user, content)
             services.update_content(content, self.author, {"body": "new"})
+
+    def test_start_watching_keeps_earlier_last_seen(self):
+        services.mark_seen(self.user, self.content)
+        services.update_content(self.content, self.author, {"body": "v2"})
+        services.update_content(self.content, self.author, {"body": "v3"})
+
+        services.start_watching(self.user, self.content)
+
+        state = UserContentState.objects.get(user=self.user, content=self.content)
+        self.assertEqual(state.last_seen_version, 1)
+        self.assertTrue(state.is_watching)
