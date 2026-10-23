@@ -99,3 +99,17 @@ class ContentTests(APITestCase):
         )
         revision = ContentRevision.objects.get(content=content, version=2)
         self.assertEqual(revision.changed_fields, ["title"])
+
+    def test_detail_shows_state_before_opening_then_marks_seen(self):
+        self.client.force_authenticate(self.user)
+        url = f"/api/contents/{self.content.id}/"
+        self.client.get(url)
+        services.update_content(self.content, self.author, {"body": "new"})
+
+        response = self.client.get(url)
+        self.assertEqual(response.json()["status"], "updated")
+        self.assertEqual(response.json()["versions_behind"], 1)
+
+        response = self.client.get(url)
+        self.assertEqual(response.json()["status"], "up_to_date")
+        self.assertEqual(response.json()["versions_behind"], 0)
