@@ -76,3 +76,18 @@ class ContentTests(APITestCase):
         state = UserContentState.objects.get(user=self.user, content=self.content)
         self.assertEqual(state.last_seen_version, 2)
         self.assertFalse(state.is_watching)
+
+    def test_write_responses_have_user_state(self):
+        self.client.force_authenticate(self.author)
+        response = self.client.post(
+            "/api/contents/", {"title": "T", "body": "B"}, format="json"
+        )
+        self.assertEqual(response.status_code, 201)
+        self.assertEqual(response.json()["status"], "up_to_date")
+        self.assertFalse(response.json()["is_watching"])
+
+        url = f"/api/contents/{response.json()['id']}/"
+        response = self.client.patch(url, {"body": "new"}, format="json")
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.json()["status"], "up_to_date")
+        self.assertEqual(response.json()["versions_behind"], 0)
