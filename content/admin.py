@@ -47,6 +47,7 @@ class ContentRevisionAdmin(admin.ModelAdmin):
     def has_delete_permission(self, request, obj=None):
         return False
 
+
 @admin.register(UserContentState)
 class UserContentStateAdmin(admin.ModelAdmin):
     list_display = ("user", "content", "last_seen_version", "is_watching")

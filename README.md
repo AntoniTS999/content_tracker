@@ -129,3 +129,5 @@ the earlier one (the earlier version is still in the history). it works fully on
   `/history/` can be used to look without marking.
 - A -> B -> A counts as 2 versions, even if the text is the same as the user saw.
 - No registration, content deleting or notifications. Users are created in the admin.
+- Revisions are read-only in the admin (no add, edit or delete), so the history cannot be changed by hand.
+  For the same reason, content cannot be deleted from the admin.
