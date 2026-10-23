@@ -76,8 +76,11 @@ Opening the detail endpoint sets `last_seen_version` to the current version.
 The list, history and changes endpoints do not mark anything as read.
 
 Details:
-- when you start watching, the current version is your starting point (you only see changes made after)
-- if you stop and start watching again, the old `last_seen_version` stays, so you see what changed in between
+- if you never opened the content, when you start watching the current version is your starting
+  point (you only see changes made after)
+- if you opened it before (or watched it before), your last seen version stays, so you see
+  everything that changed since you last read it. For example: you read version 1, it gets to
+  version 5, then you start watching: you see 4 missed versions
 - if you edit content yourself, it is not shown as a change for you
 
 **Why a version number and not `updated_at`?** A number is simple to compare, it does not depend
