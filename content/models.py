@@ -31,6 +31,11 @@ class Content(models.Model):
 
     class Meta:
         ordering = ["-last_changed_at", "-id"]
+        indexes = [
+            models.Index(
+                fields=["-last_changed_at", "-id"], name="content_changed_index"
+            ),
+        ]
 
     def __str__(self):
         return f"{self.title} - version {self.version}"
