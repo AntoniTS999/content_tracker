@@ -134,8 +134,8 @@ then reads the fresh data. So two edits of the same content go one after another
 waits and gets the next version number, and nobody gets a server error. `UNIQUE(content, version)`
 stays as a second safety wall.
 
-If two people change the same field, the later save overwrites
-the earlier one (the earlier version is still in the history). it works fully on PostgreSQL, so in case production - could be change easily to Postgres.
+This is tested: `test_update_content_locks_the_row` checks that on PostgreSQL an edit takes a row
+lock (`SELECT ... FOR UPDATE`). On SQLite the test is skipped, because row locks do not work there.
 
 
 ## Simplifications
