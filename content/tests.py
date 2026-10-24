@@ -1,6 +1,8 @@
+from unittest import skipUnless
 from unittest.mock import patch
 
 from django.db import connection
+from django.test import TransactionTestCase
 from django.test.utils import CaptureQueriesContext
 from rest_framework.test import APITestCase
 
@@ -269,3 +271,11 @@ class ContentTests(APITestCase):
         state = UserContentState.objects.get(user=self.user, content=self.content)
         self.assertEqual(state.last_seen_version, 3)
         self.assertTrue(state.is_watching)
+
+    @skipUnless(connection.vendor == "postgresql", "row locks need PostgreSQL")
+    def test_update_content_locks_the_row(self):
+        with CaptureQueriesContext(connection) as queries:
+            services.update_content(self.content, self.author, {"body": "New"})
+
+        sql = " ".join(query["sql"] for query in queries)
+        self.assertIn("FOR UPDATE", sql)
