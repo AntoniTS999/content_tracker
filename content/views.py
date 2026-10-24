@@ -81,7 +81,11 @@ class ContentViewSet(
         context = self.get_serializer_context()
         context["seen_version"] = state.last_seen_version if state else None
 
-        revisions = content.revisions.select_related("editor").order_by("-version")
+        revisions = (
+            content.revisions.select_related("editor")
+            .defer("title", "body")
+            .order_by("-version")
+        )
         page = self.paginate_queryset(revisions)
         serializer = ContentRevisionSerializer(page, many=True, context=context)
         return self.get_paginated_response(serializer.data)
