@@ -105,7 +105,7 @@ class MyChangesView(generics.ListAPIView):
                 content__version__gt=F("last_seen_version"),
             )
             .select_related("content")
-            .order_by("-content__last_changed_at")
+            .order_by("-content__last_changed_at", "-content_id")
         )
 
 
