@@ -5,13 +5,22 @@ and see what changed since they last opened it.
 
 ## Run
 
+Target database is PostgreSQL. SQLite works for a quick demo, but not for concurrency
+(`select_for_update()` does nothing on SQLite).
+
 ```bash
 pip install -r requirements.txt
+cp .env.sample .env             # then fill in your own database name, user and password
+docker compose up -d
 python manage.py migrate
 python manage.py createsuperuser
 python manage.py runserver
-python manage.py test content
+python manage.py test content   # includes the row lock test (PostgreSQL only)
 ```
+
+Without a `.env` file the project uses SQLite (`db.sqlite3`). `.env` is not committed;
+`.env.sample` shows the needed variables. Stop the database with `docker compose down`
+(data stays in the `pgdata` volume).
 
 Create test users in the admin panel (`/admin/`).
 
