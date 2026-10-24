@@ -116,6 +116,9 @@ version is saved in `ContentRevision`, so diffs can be added later.
 - **Cache** (not done, an idea): a cached counter "you have N changes" per user with a short
   timeout, cleared when the user opens, watches or unwatches something. I would not cache the
   list itself.
+- **Index for the list.** The content list is sorted by `-last_changed_at, -id`, and there is an index
+  on the same columns, so the database can take the first page from the index without sorting the
+  whole table.
 
 **What will be the bottleneck?**
 - `UserContentState` grows with users x content, so old rows would need cleanup later
